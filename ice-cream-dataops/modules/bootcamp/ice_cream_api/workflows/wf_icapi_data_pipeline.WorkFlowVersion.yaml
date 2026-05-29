@@ -1,0 +1,50 @@
+workflowExternalId: wf_icapi_data_pipeline
+version: '1'
+workflowDefinition:
+  tasks:
+    # Step 1: Create Asset Hierarchy (First task, no dependencies)
+    - externalId: create_asset_hierarchy_task
+      type: transformation
+      parameters:
+        transformation:
+          externalId: create_asset_hierarchy
+      retries: 3
+      timeout: 3600
+      onFailure: abortWorkflow
+
+    # Step 2: Contextualize TS Assets (Depends on Step 1)
+    - externalId: contextualize_ts_assets_task
+      type: transformation
+      parameters:
+        transformation:
+          externalId: contextualize_ts_assets
+      retries: 3
+      timeout: 3600
+      onFailure: abortWorkflow
+      dependsOn:
+        - externalId: create_asset_hierarchy_task
+
+    # Step 3: ICAPI Datapoints Extractor (Depends on Step 2)
+    - externalId: icapi_datapoints_extractor_task
+      type: function
+      parameters:
+        function:
+          externalId: icapi_datapoints_extractor
+          data: { "hours": 1 }
+      retries: 3
+      timeout: 3600
+      onFailure: abortWorkflow
+      dependsOn:
+        - externalId: contextualize_ts_assets_task
+
+    # Step 4: OEE Timeseries (Final task, depends on Step 3)
+    - externalId: oee_timeseries_task
+      type: function
+      parameters:
+        function:
+          externalId: oee_timeseries
+      retries: 3
+      timeout: 3600
+      onFailure: abortWorkflow
+      dependsOn:
+        - externalId: icapi_datapoints_extractor_task
