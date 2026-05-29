@@ -52,7 +52,7 @@ jobs:
       ICAPI_EXTRACTORS_SOURCE_ID: ${{ vars.ICAPI_EXTRACTORS_SOURCE_ID }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Verify and Update Toolkit Authorization
         run: yes | cdf auth verify
       - name: Build Toolkit Configurations
